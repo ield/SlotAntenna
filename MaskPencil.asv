@@ -31,8 +31,8 @@ bw=data(1); %Main beam width (at -3 dB) (degrees)
 angPencil=bw/2; %half of the width of the main beam (degrees)
 angSec=40; %Angle that determines the end of the sidelobes
 Gmax=data(2); %Gain (dBi)
-Gmin=data(3); %Difference between the maximum and minimum gain in the main beam (dB)
-LobSec=data(4); %Desired sidelobe level (dB)
+Gmin=d; %Difference between the maximum and minimum gain in the main beam (dB)
+LobSec=16; %Desired sidelobe level (dB)
 Gfin=35; %Difference between the maximum gain in theta=0 and theta=90 (dB)
 
 %% 2-Definition of angular regions

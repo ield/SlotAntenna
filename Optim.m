@@ -35,7 +35,7 @@ set(0,'DefaultAxesXGrid','on','DefaultAxesYGrid','on','DefaultAxesZGrid','on')
 
 %Parameters that can be modified
 angMask=20; %Angle in which the main beam finishes (degrees)
-Nturns=4; %Number of spiral turns
+Nturns=8; %Number of spiral turns
 Ncont=2*Nturns; %Number of control points
 isoflux=0; %Isoflux=1 to obtain an isoflux pattern. Isoflux=0 to obtain a pencil beam pattern
 
@@ -43,6 +43,26 @@ isoflux=0; %Isoflux=1 to obtain an isoflux pattern. Isoflux=0 to obtain a pencil
 file='structurelowf.mat';
 load(file)
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%Values to modify: 
+% It is important to insert them here and savet them in
+% datos of struclowf. They are the values below. The values are adjusted to
+% our initial theoretical design.
+freq = 8.15;    %  Frequency (GHz)
+datos(1,4) = freq;
+h = 10;         % Height of the waveguide (mm)
+datos(1,1) = h;
+t = 1;          % Thickness of the upper plate (mm)
+datos(1,2) = t;
+bw = 5;        % Main beam width (at -3 dB) (degrees)
+datos(3,1) = bw;
+Gmax = 33;      % Gain (dBi)
+datos(3,2) = Gmax;
+Gmin = 4;       %Difference between the maximum and minimum gain in the main beam (dB)
+datos(3,3) = Gmin;
+LobSec = 23;    %Desired sidelobe level (dB)
+datos(3,4) = LobSec;
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %Other constants that are used
 freq=datos(1,4) %Frequency (GHz)
 epsr=datos(1,3) %Relative permittivity of the material that fills the RLSA
@@ -79,9 +99,9 @@ theta=linspace(-pi/2,pi/2,resTheta); %Rango completo de coordenadas theta
 %% 2-Optimization target masks
 
 if isoflux
-    [DmaxdB,DmindB,XPmax]=MaskIsoflux20(resTheta,resPhi); %Isoflux mask
+%     [DmaxdB,DmindB,XPmax]=MaskIsoflux20(resTheta,resPhi); %Isoflux mask
 else
-    [Dmax,Dmin,angPincel]=MaskPencil(resTheta,resPhi); %Pencil beam with controlled SLL mask
+    [Dmax,Dmin,angPincel]=MaskPencil(resTheta,resPhi, datos(3,:)); %Pencil beam with controlled SLL mask
 end
 
 %% 3-Optimization initial values and bounds

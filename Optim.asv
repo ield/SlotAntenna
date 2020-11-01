@@ -43,6 +43,25 @@ isoflux=0; %Isoflux=1 to obtain an isoflux pattern. Isoflux=0 to obtain a pencil
 file='structurelowf.mat';
 load(file)
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%Values to modify: 
+% It is important to insert them here and savet them in
+% datos of struclowf. They are the values below. The values are adjusted to
+% our initial theoretical design.
+freq = 8.15;    %  Frequency (GHz)
+datos(1,4) = freq;
+h = 10;         % Height of the waveguide (mm)
+datos(1,1) = h;
+t = 1;          % Thickness of the upper plate (mm)
+datos(1,2) = t;
+bw = 10;        % Main beam width (at -3 dB) (degrees)
+datos(3,1) = bw;
+Gmax = 33;      % Gain (dBi)
+datos(3,2) = Gmax;
+Gmin = 4;       %Difference between the maximum and minimum gain in the main beam (dB)
+datos(3,3) = Gmin;
+LobSec = 16; %Desired sidelobe level (dB)
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %Other constants that are used
 freq=datos(1,4) %Frequency (GHz)
 epsr=datos(1,3) %Relative permittivity of the material that fills the RLSA
@@ -125,9 +144,9 @@ if datos(2,1)~=0, sondas(:,6)=sondas(:,6)*pi/180;  end
 if datos(2,2)~=0, slotsSol(:,5)=slotsSol(:,5)*pi/180;	 end
 
 %The directivity of the resulting antenna is obtained
-[Vs,Is,Ic,Vr,Ir,E,Hx,Hy]=Analiza(datos,slotsSol,cortos,sondas,puntos);
-[Ecp2,Exp2]=Calc_cpo(datos,slotsSol,Vr);
-[d0,Pradd]=Calc_dir(datos,slotsSol,Vr);
+[Vs,Is,Ic,Vr,Ir,E,Hx,Hy]=analiza(datos,slotsSol,cortos,sondas,puntos);
+[Ecp2,Exp2]=calc_cpo(datos,slotsSol,Vr);
+[d0,Pradd]=calc_dir(datos,slotsSol,Vr);
 
 dirSoldB=Ecp2+d0*ones(resPhi,resTheta); %CP component
 dirXPdB=Exp2+d0*ones(resPhi,resTheta); %XP component
@@ -141,13 +160,18 @@ if datos(2,2)~=0, slotsSol(:,5)=slotsSol(:,5)*180/pi;	 end
 for jj=1:resPhi,
 	phicoor(jj)=(datos(4,3)+(jj-1)*(datos(4,4)-datos(4,3))/(resPhi-1));
 end
+% Definition of thmin to plot Dmin
+load('GaliboPincel.mat');
+thmin_plot = thmin;
+save('GaliboPincel.mat');
+% close('GaliboPincel.mat');
 
 %The radiation pattern is plotted and compared with the directivity masks
 for jj=1:resPhi
     figure
-    plot(theta*360/(2*pi),DmaxdB(jj,:),'b')
+    plot(theta*360/(2*pi),Dmax(jj,:),'b')
     hold all
-    plot(theta*360/(2*pi),DmindB(jj,:),'r')
+plot(thmin*360/(2*pi),Dmin(jj,:),'r')
     hold all
     plot(theta*360/(2*pi),dirSoldB(jj,:),'g',theta*360/(2*pi),dirXPdB(jj,:),'k')
     hold off
