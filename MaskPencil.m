@@ -94,16 +94,16 @@ for i=1:resPhi
 end
 
 %% 4-Plot
-for jj=1:resPhi
+% for jj=1:resPhi
     figure
-    plot(theta*360/(2*pi),Dmax(jj,:),'b')
+    plot(theta*360/(2*pi),Dmax(1,:),'b')
     hold on
-    plot(thmin*360/(2*pi),Dmin(jj,:),'r')
+    plot(thmin*360/(2*pi),Dmin(1,:),'r')
     hold off
     ylabel('D(\theta) (dB)')
-    xlabel('\theta (?)')
+    xlabel('\theta')
     xlim([-90 90])
-end
+% end
 thetaGal=theta;
 
 %The target patterns are stored in a .mat file

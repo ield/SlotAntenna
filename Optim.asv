@@ -125,9 +125,9 @@ if datos(2,1)~=0, sondas(:,6)=sondas(:,6)*pi/180;  end
 if datos(2,2)~=0, slotsSol(:,5)=slotsSol(:,5)*pi/180;	 end
 
 %The directivity of the resulting antenna is obtained
-[Vs,Is,Ic,Vr,Ir,E,Hx,Hy]=analiza(datos,slotsSol,cortos,sondas,puntos);
-[Ecp2,Exp2]=calc_cpo(datos,slotsSol,Vr);
-[d0,Pradd]=calc_dir(datos,slotsSol,Vr);
+[Vs,Is,Ic,Vr,Ir,E,Hx,Hy]=Analiza(datos,slotsSol,cortos,sondas,puntos);
+[Ecp2,Exp2]=Calc_cpo(datos,slotsSol,Vr);
+[d0,Pradd]=Calc_dir(datos,slotsSol,Vr);
 
 dirSoldB=Ecp2+d0*ones(resPhi,resTheta); %CP component
 dirXPdB=Exp2+d0*ones(resPhi,resTheta); %XP component
@@ -141,18 +141,13 @@ if datos(2,2)~=0, slotsSol(:,5)=slotsSol(:,5)*180/pi;	 end
 for jj=1:resPhi,
 	phicoor(jj)=(datos(4,3)+(jj-1)*(datos(4,4)-datos(4,3))/(resPhi-1));
 end
-% Definition of thmin to plot Dmin
-load('GaliboPincel.mat');
-thmin_plot = thmin;
-save('GaliboPincel.mat');
-% close('GaliboPincel.mat');
 
 %The radiation pattern is plotted and compared with the directivity masks
 for jj=1:resPhi
     figure
-    plot(theta*360/(2*pi),Dmax(jj,:),'b')
+    plot(theta*360/(2*pi),DmaxdB(jj,:),'b')
     hold all
-plot(thmin*360/(2*pi),Dmin(jj,:),'r')
+    plot(theta*360/(2*pi),DmindB(jj,:),'r')
     hold all
     plot(theta*360/(2*pi),dirSoldB(jj,:),'g',theta*360/(2*pi),dirXPdB(jj,:),'k')
     hold off

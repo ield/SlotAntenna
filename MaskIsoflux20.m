@@ -22,8 +22,8 @@ function [Dmax,Dmin,XPmax]=MaskIsoflux20(resTheta,resPhi)
 theta=linspace(-pi/2,pi/2,resTheta);
 
 %Three different regions are obtained in our target patterns
-endSL=find(theta>(-20*pi/180),1,'first'); %End of the sidelobes
-endMB=find(theta>(20*pi/180),1,'first')-1; %End of the main beam
+endSL=find(theta>(-20*pi/180),1,'first') %End of the sidelobes
+endMB=find(theta>(20*pi/180),1,'first')-1 %End of the main beam
 theta1=theta(1:(endSL-1)); %Region 1 (sidelobes)
 theta2=theta(endSL:endMB); %Region 2 (main beam)
 theta3=theta((endMB+1):end); %Region 3 (sidelobes)

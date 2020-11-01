@@ -48,6 +48,7 @@ if datos(2,2)~=0, ranuras(:,5)=ranuras(:,5)*pi/180;	 end
 
 %The antenna directivity is calculated
 [Vs,Is,Ic,Vr,Ir,E,Hx,Hy]=analiza(datos,ranuras,cortos,sondas,puntos);
+E;
 [Ecp2,Exp2]=calc_cpo(datos,ranuras,Vr);
 [d0,Pradd]=calc_dir(datos,ranuras,Vr)
 
