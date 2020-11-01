@@ -43,7 +43,7 @@ isoflux=0; %Isoflux=1 to obtain an isoflux pattern. Isoflux=0 to obtain a pencil
 file='structurelowf.mat';
 load(file)
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %Values to modify: 
 % It is important to insert them here and savet them in
 % datos of struclowf. They are the values below. The values are adjusted to
