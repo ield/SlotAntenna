@@ -35,7 +35,7 @@ set(0,'DefaultAxesXGrid','on','DefaultAxesYGrid','on','DefaultAxesZGrid','on')
 
 %Parameters that can be modified
 angMask=20; %Angle in which the main beam finishes (degrees)
-Nturns=8; %Number of spiral turns
+Nturns=3; %Number of spiral turns
 Ncont=2*Nturns; %Number of control points
 isoflux=0; %Isoflux=1 to obtain an isoflux pattern. Isoflux=0 to obtain a pencil beam pattern
 
@@ -43,7 +43,7 @@ isoflux=0; %Isoflux=1 to obtain an isoflux pattern. Isoflux=0 to obtain a pencil
 file='structurelowf.mat';
 load(file)
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %Values to modify: 
 % It is important to insert them here and savet them in
 % datos of struclowf. They are the values below. The values are adjusted to
@@ -56,7 +56,7 @@ t = 1;          % Thickness of the upper plate (mm)
 datos(1,2) = t;
 bw = 5;        % Main beam width (at -3 dB) (degrees)
 datos(3,1) = bw;
-Gmax = 33;      % Gain (dBi)
+Gmax = 25;      % Gain (dBi)
 datos(3,2) = Gmax;
 Gmin = 4;       %Difference between the maximum and minimum gain in the main beam (dB)
 datos(3,3) = Gmin;
@@ -79,10 +79,11 @@ epseff=0.4+0.6*epsr+0.21*(1-epsr)*sqrt(t./w);   % w is the slot width. Formula i
 lambdaeff=lambda0./sqrt(epseff);                % Initial Lres
 
 %Resolution in theta
+% IMPORTANT!!!!!!!!!!: The program works if and only if resTheta == resPhi
 resTheta=181; % Number of theta angles
 datos(5,1)= resTheta;
 %Resolution in phi
-resPhi=8; % Number of phi angles
+resPhi=181; % Number of phi angles
 datos(5,2)= resPhi;
 
 %Type of polarization (LHCP-->1 RHCP-->0)
@@ -95,7 +96,7 @@ datos(4,3)=-90;
 datos(4,4)=90;
 
 theta=linspace(-pi/2,pi/2,resTheta); %Rango completo de coordenadas theta
-
+phi = linspace (-pi,pi,resPhi); %Rango completo de coordenadas phi
 %% 2-Optimization target masks
 
 if isoflux
@@ -168,18 +169,42 @@ save('GaliboPincel.mat');
 % close('GaliboPincel.mat');
 
 %The radiation pattern is plotted and compared with the directivity masks
-for jj=1:resPhi
-    figure
-    plot(theta*360/(2*pi),Dmax(jj,:),'b')
-    hold all
-plot(thmin*360/(2*pi),Dmin(jj,:),'r')
-    hold all
-    plot(theta*360/(2*pi),dirSoldB(jj,:),'g',theta*360/(2*pi),dirXPdB(jj,:),'k')
-    hold off
-    title(['G?libos en el corte \phi= '  num2str(phicoor(jj)) '?'])
-    ylabel('D(\theta) (dB)')
-    xlabel('\theta (?)')
-    xlim([-90 90])
-    legend('Maximum', 'Minimum','CP','XP')
+% for jj=1:resPhi
+%     if (jj == 1 | jj == ceil(resPhi/2))
+%         
+%          plot(phi*360/(2*pi),dirSoldB(:,jj))
+%          hold all
+%          plot(phi*360/(2*pi),dirXPdB(:,jj))
+%          hold off
+%          ylabel('D(\theta) (dB)')
+%          xlabel('\phi (º)')
+%          xlim([-180 180])
+%          figure;       
+%     end
+% end
+for jj=1:resTheta
+    if(jj == 1 | jj == ceil(resTheta/2) | jj == ceil(resTheta/4))
+        
+        plot(theta*360/(2*pi),Dmax(jj,:),'b')
+        hold on 
+        plot(thmin*360/(2*pi),Dmin(jj,:),'r')
+        hold on
+        ylabel('D(\theta) (dB)')
+        xlabel('\theta (?)')
+        xlim([-90 90])
+        plot(theta*360/(2*pi),dirSoldB(jj,:),'g',theta*360/(2*pi),dirXPdB(jj,:),'k')
+        title(['Galibos en el corte \phi= '  num2str(phicoor(jj)) '?'])
+        ylabel('D(\theta) (dB)')
+        xlabel('\theta (?)')
+        xlim([-90 90])
+        legend('D_{max}','D_{min}','Copolar_{theta}', 'Crosspolar_{theta}')
+        figure;
+    end
 end
+
+
+ u = linspace(-1,1,resPhi);
+ v = linspace(-1,1,resTheta);
+ surf(u,v,Ecp2);
+
 
