@@ -33,9 +33,14 @@ set(0,'defaulttextfontsize',14);
 set(0,'defaultlinelinewidth',2);
 set(0,'DefaultAxesXGrid','on','DefaultAxesYGrid','on','DefaultAxesZGrid','on')
 
+freq = 8.15;    %  Frequency (GHz)
+lambda0=300/freq %Vacuum wavelength (mm)
+sizeAntenna = 400;  %Size of the antenna in mm
+
+
 %Parameters that can be modified
 angMask=20; %Angle in which the main beam finishes (degrees)
-Nturns=3; %Number of spiral turns
+Nturns=floor((sizeAntenna/lambda0-1)/2); %Number of spiral turns
 Ncont=2*Nturns; %Number of control points
 isoflux=0; %Isoflux=1 to obtain an isoflux pattern. Isoflux=0 to obtain a pencil beam pattern
 
@@ -48,7 +53,7 @@ load(file)
 % It is important to insert them here and savet them in
 % datos of struclowf. They are the values below. The values are adjusted to
 % our initial theoretical design.
-freq = 8.15;    %  Frequency (GHz)
+
 datos(1,4) = freq;
 h = 3;         % Height of the waveguide (mm). Evaluate different values.
 datos(1,1) = h;
@@ -56,7 +61,7 @@ t = 1;          % Thickness of the upper plate (mm)
 datos(1,2) = t;
 bw = 5;        % Main beam width (at -3 dB) (degrees)
 datos(3,1) = bw;
-Gmax = 25;      % Gain (dBi)
+Gmax = 33;      % Gain (dBi)
 datos(3,2) = Gmax;
 Gmin = 4;       %Difference between the maximum and minimum gain in the main beam (dB)
 datos(3,3) = Gmin;
@@ -68,7 +73,6 @@ freq=datos(1,4) %Frequency (GHz)
 epsr=datos(1,3) %Relative permittivity of the material that fills the RLSA
 t=datos(1,2); %Thickness of the upper plate (mm)
 h=datos(1,1); %Height of the waveguide (mm)
-lambda0=300/freq; %Vacuum wavelength (mm)
 
 %Waveguide wavelength (mm)
 lambdag=lambda0/sqrt(epsr); 
@@ -88,8 +92,8 @@ datos(5,1)= resTheta;
 resPhi=5; % Number of phi angles
 datos(5,2)= resPhi;
 
-%Type of polarization (LHCP-->1 RHCP-->0)
-datos(5,3)= 1;
+%Type of polarization (LHCP-->1 RHCP-->2)
+datos(5,3)= 2;
 
 %M?nimo y m?ximo theta y phi
 datos(4,1)=-90;
@@ -168,22 +172,7 @@ end
 load('GaliboPincel.mat');
 thmin_plot = thmin;
 save('GaliboPincel.mat');
-% close('GaliboPincel.mat');
 
-%The radiation pattern is plotted and compared with the directivity masks
-% for jj=1:resPhi
-%     if (jj == 1 | jj == ceil(resPhi/2))
-%         
-%          plot(phi*360/(2*pi),dirSoldB(:,jj))
-%          hold all
-%          plot(phi*360/(2*pi),dirXPdB(:,jj))
-%          hold off
-%          ylabel('D(\theta) (dB)')
-%          xlabel('\phi (º)')
-%          xlim([-180 180])
-%          figure;       
-%     end
-% end
 % for jj=1:resphi
 %     if(jj == 1 | jj == ceil(resTheta/2) | jj == ceil(resTheta/4))
 % %     if(jj == 1 | jj == ceil(resTheta/2) | jj == ceil(resTheta/4))    
@@ -204,8 +193,14 @@ save('GaliboPincel.mat');
 %         figure;
 %     end
 % end
-
+% Do this for resPhi = 3 so that there are no exceeding stored values
+%% Plot and print
+bw = zeros(1, resPhi);
+maxGain = zeros(1, resPhi);
+sll = zeros(1, resPhi);
+cpxp = zeros(1, resPhi);
 for jj=1:resPhi
+    figure;
     plot(theta*360/(2*pi),Dmax(jj,:),'b')
     hold on 
     plot(thmin*360/(2*pi),Dmin(jj,:),'r')
@@ -213,18 +208,36 @@ for jj=1:resPhi
     ylabel('D(\theta) (dB)')
     xlabel('\theta (?)')
     xlim([-90 90])
-    plot(theta*360/(2*pi),dirSoldB(jj,:),'g',theta*360/(2*pi),dirXPdB(jj,:),'k')
+    % For lhcp
+%     plot(theta*360/(2*pi),dirSoldB(jj,:),'g',theta*360/(2*pi),dirXPdB(jj,:),'k')
+%     bw(jj) = findBw(theta*360/(2*pi),dirSoldB(jj,:))
+%     maxGain(jj) = max(dirSoldB(jj, :));
+%     sll(jj) = calcSLL(dirSoldB(jj, :));
+%     cpxp(jj) = maxGain(jj) - max(dirXPdB(jj,round(resTheta/2)));
+%     legend('D_{max}','D_{min}','Copolar_{theta}', 'Crosspolar_{theta}')
+    % For RHCP: changes cp and xp
+    plot(theta*360/(2*pi),dirSoldB(jj,:),'k',theta*360/(2*pi),dirXPdB(jj,:),'g')
+    bw(jj) = findBw(theta*360/(2*pi),dirXPdB(jj,:))
+    maxGain(jj) = max(dirXPdB(jj, :));
+    sll(jj) = calcSLL(dirXPdB(jj, :));
+    cpxp(jj) = maxGain(jj) - max(dirSoldB(jj,round(resTheta/2)));
+    legend('D_{max}','D_{min}','Crosspolar_{theta}', 'Copolar_{theta}')
+
     title(['Galibos en el corte \phi= '  num2str(phicoor(jj)) '?'])
     ylabel('D(\theta) (dB)')
-    xlabel('\theta (?)')
+    xlabel('\theta')
     xlim([-90 90])
-    legend('D_{max}','D_{min}','Copolar_{theta}', 'Crosspolar_{theta}')
-    figure;
 end
-
-
+eff = 0.9;
+fprintf('The maximum directivity is %f dB\n', max(maxGain));
+fprintf('The maximum gain is %f dB\n', max(maxGain)+10*log10(eff));
+fprintf('The sll in phi = 0º are %f dB\n', sll(3));
+fprintf('The sll in phi = 90º are %f dB\n', sll(1));
+fprintf('The cpxp is %f dB\n', max(cpxp));
+fprintf('The beamwidth in phi = 0º is %f º\n', bw(3));
+fprintf('The beamwidth in phi = 90º is %f º\n', bw(1));
 %  u = linspace(-1,1,resPhi);
 %  v = linspace(-1,1,resTheta);
 %  surf(u,v,Ecp2);
-
+% close all;
 
