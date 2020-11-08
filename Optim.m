@@ -22,6 +22,16 @@
 %   Author: Tamara Salmer?n
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Things to change for every simulation
+% freq: lin46
+% sizeAntenna: lin48
+% MaxGain: lin74
+% Polarization: lin106
+% Name of the saved antenna: lin 169
+% Data to be printed: depending on polarization 225 or 232
+% Name of the saved file: lin 243.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %function [slotsSol,nslotsSol]=Optim(resTheta,resPhi)
 
@@ -57,7 +67,7 @@ load(file)
 datos(1,4) = freq;
 h = 3;         % Height of the waveguide (mm). Evaluate different values.
 datos(1,1) = h;
-t = 1;          % Thickness of the upper plate (mm)
+t = 0.4;          % Thickness of the upper plate (mm)
 datos(1,2) = t;
 bw = 5;        % Main beam width (at -3 dB) (degrees)
 datos(3,1) = bw;
@@ -160,9 +170,9 @@ dirSoldB=Ecp2+d0*ones(resPhi,resTheta); %CP component
 dirXPdB=Exp2+d0*ones(resPhi,resTheta); %XP component
 
 %The resutls are stored into a mat file
-save antena.mat nslotsSol slotsSol dirSoldB dirXPdB datos deltaRsol longcsol varPossol fval exitflag output resPhi resTheta
+save antena_lhcp_8000.mat nslotsSol slotsSol dirSoldB dirXPdB datos deltaRsol longcsol varPossol fval exitflag output resPhi resTheta
 
-%Conversion from radians to degrees
+%% Conversion from radians to degrees
 if datos(2,2)~=0, slotsSol(:,5)=slotsSol(:,5)*180/pi;	 end
 
 for jj=1:resPhi,
@@ -199,8 +209,12 @@ bw = zeros(1, resPhi);
 maxGain = zeros(1, resPhi);
 sll = zeros(1, resPhi);
 cpxp = zeros(1, resPhi);
-for jj=1:resPhi
-    figure;
+
+figure('Color',[1 1 1]);
+set(gcf,'position',[100,100,1500,300]);
+set(gcf, 'DefaultAxesFontSize',10)
+for jj=1:3
+    subplot(1, 3, jj);
     plot(theta*360/(2*pi),Dmax(jj,:),'b')
     hold on 
     plot(thmin*360/(2*pi),Dmin(jj,:),'r')
@@ -209,25 +223,30 @@ for jj=1:resPhi
     xlabel('\theta (?)')
     xlim([-90 90])
     % For lhcp
-%     plot(theta*360/(2*pi),dirSoldB(jj,:),'g',theta*360/(2*pi),dirXPdB(jj,:),'k')
-%     bw(jj) = findBw(theta*360/(2*pi),dirSoldB(jj,:))
-%     maxGain(jj) = max(dirSoldB(jj, :));
-%     sll(jj) = calcSLL(dirSoldB(jj, :));
-%     cpxp(jj) = maxGain(jj) - max(dirXPdB(jj,round(resTheta/2)));
-%     legend('D_{max}','D_{min}','Copolar_{theta}', 'Crosspolar_{theta}')
+%     plot(theta*360/(2*pi),dirSoldB(2+jj,:),'g',theta*360/(2*pi),dirXPdB(2+jj,:),'k')
+%     bw(jj) = findBw(theta*360/(2*pi),dirSoldB(2+jj,:))
+%     maxGain(jj) = max(dirSoldB(2+jj, :));
+%     sll(jj) = calcSLL(dirSoldB(2+jj, :));
+%     cpxp(jj) = maxGain(jj) - max(dirXPdB(2+jj,round(resTheta/2)));
+%     legend('D_{max}','D_{min}','Copolar_{theta}', 'Crosspolar_{theta}', 'Location', 'southwest')
     % For RHCP: changes cp and xp
-    plot(theta*360/(2*pi),dirSoldB(jj,:),'k',theta*360/(2*pi),dirXPdB(jj,:),'g')
-    bw(jj) = findBw(theta*360/(2*pi),dirXPdB(jj,:))
-    maxGain(jj) = max(dirXPdB(jj, :));
-    sll(jj) = calcSLL(dirXPdB(jj, :));
-    cpxp(jj) = maxGain(jj) - max(dirSoldB(jj,round(resTheta/2)));
+    plot(theta*360/(2*pi),dirSoldB(jj+2,:),'k',theta*360/(2*pi),dirXPdB(2+jj,:),'g')
+    bw(jj) = findBw(theta*360/(2*pi),dirXPdB(2+jj,:))
+    maxGain(jj) = max(dirXPdB(2+jj, :));
+    sll(jj) = calcSLL(dirXPdB(2+jj, :));
+    cpxp(jj) = maxGain(jj) - max(dirSoldB(2+jj,round(resTheta/2)));
     legend('D_{max}','D_{min}','Crosspolar_{theta}', 'Copolar_{theta}')
 
-    title(['Galibos en el corte \phi= '  num2str(phicoor(jj)) '?'])
+    title(['Cut \phi= '  num2str(phicoor(jj+2))])
     ylabel('D(\theta) (dB)')
     xlabel('\theta')
     xlim([-90 90])
 end
+path = 'Plots/';
+filename = 'n4_tx';
+saveas(gca, [path, filename],'epsc');
+saveas(gca, [path, filename],'png');
+
 eff = 0.9;
 fprintf('The maximum directivity is %f dB\n', max(maxGain));
 fprintf('The maximum gain is %f dB\n', max(maxGain)+10*log10(eff));
@@ -236,6 +255,8 @@ fprintf('The sll in phi = 90º are %f dB\n', sll(1));
 fprintf('The cpxp is %f dB\n', max(cpxp));
 fprintf('The beamwidth in phi = 0º is %f º\n', bw(3));
 fprintf('The beamwidth in phi = 90º is %f º\n', bw(1));
+
+
 %  u = linspace(-1,1,resPhi);
 %  v = linspace(-1,1,resTheta);
 %  surf(u,v,Ecp2);

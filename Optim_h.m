@@ -1,4 +1,4 @@
-h = 1:10;
+t = [1:20]*.05;
 
 maxDir = zeros(1, length(h));
 sll = zeros(1, length(h));
