@@ -29,7 +29,7 @@ set(0,'DefaultAxesXGrid','on','DefaultAxesYGrid','on','DefaultAxesZGrid','on')
 %Parameters that can be modified in Optim.m (at the beginning)
 bw=data(1); %Main beam width (at -3 dB) (degrees)
 angPencil=bw/2; %half of the width of the main beam (degrees)
-angSec=40; %Angle that determines the end of the sidelobes
+angSec=20; %Angle that determines the end of the sidelobes
 Gmax=data(2); %Gain (dBi)
 Gmin=data(3); %Difference between the maximum and minimum gain in the main beam (dB)
 LobSec=data(4); %Desired sidelobe level (dB)

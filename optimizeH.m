@@ -1,3 +1,4 @@
+function [maxDir, sll, cpxp] = optimizeH(h)
 
 
 %%%%% Optim.m %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -26,8 +27,6 @@
 %function [slotsSol,nslotsSol]=Optim(resTheta,resPhi)
 
 %% 1-Initial setup
-clear all
-close all
 set(0,'defaultaxesfontsize',14);
 set(0,'defaulttextfontsize',14);
 set(0,'defaultlinelinewidth',2);
@@ -50,7 +49,6 @@ load(file)
 % our initial theoretical design.
 freq = 8.15;    %  Frequency (GHz)
 datos(1,4) = freq;
-h = 3;         % Height of the waveguide (mm). Evaluate different values.
 datos(1,1) = h;
 t = 1;          % Thickness of the upper plate (mm)
 datos(1,2) = t;
@@ -85,7 +83,7 @@ datos(5,1)= resTheta;
 %Resolution in phi
 % resPhi=181; % Number of phi angles
 % datos(5,2)= resPhi;
-resPhi=5; % Number of phi angles
+resPhi=3; % Number of phi angles
 datos(5,2)= resPhi;
 
 %Type of polarization (LHCP-->1 RHCP-->0)
@@ -117,7 +115,7 @@ varPosIni=zeros(1,Ncont); %Initial values of the variation of the position of th
 xIni=[deltaRini longcIni varPosIni];
 
 %Optimization options
-options=optimset('Algorithm','active-set','Maxiter',2e3,'MaxFunEvals',2e3,'PlotFcns', {@optimplotx, @optimplotfval,@optimplotfunccount,@optimplotconstrviolation});
+options=optimset('Algorithm','active-set','Maxiter',1e3,'MaxFunEvals',1e3,'PlotFcns', {@optimplotx, @optimplotfval,@optimplotfunccount,@optimplotconstrviolation});
 
 %Bounds of the optimization parameters
 lb=[0.9*lambdag 0.39*lambdaeff*ones(1,Ncont) -0.05*lambdag*ones(1,Ncont)]; %Lower bounds
@@ -168,63 +166,11 @@ end
 load('GaliboPincel.mat');
 thmin_plot = thmin;
 save('GaliboPincel.mat');
-% close('GaliboPincel.mat');
 
-%The radiation pattern is plotted and compared with the directivity masks
-% for jj=1:resPhi
-%     if (jj == 1 | jj == ceil(resPhi/2))
-%         
-%          plot(phi*360/(2*pi),dirSoldB(:,jj))
-%          hold all
-%          plot(phi*360/(2*pi),dirXPdB(:,jj))
-%          hold off
-%          ylabel('D(\theta) (dB)')
-%          xlabel('\phi (º)')
-%          xlim([-180 180])
-%          figure;       
-%     end
-% end
-% for jj=1:resphi
-%     if(jj == 1 | jj == ceil(resTheta/2) | jj == ceil(resTheta/4))
-% %     if(jj == 1 | jj == ceil(resTheta/2) | jj == ceil(resTheta/4))    
-%         
-%         plot(theta*360/(2*pi),Dmax(jj,:),'b')
-%         hold on 
-%         plot(thmin*360/(2*pi),Dmin(jj,:),'r')
-%         hold on
-%         ylabel('D(\theta) (dB)')
-%         xlabel('\theta (?)')
-%         xlim([-90 90])
-%         plot(theta*360/(2*pi),dirSoldB(jj,:),'g',theta*360/(2*pi),dirXPdB(jj,:),'k')
-%         title(['Galibos en el corte \phi= '  num2str(phicoor(jj)) '?'])
-%         ylabel('D(\theta) (dB)')
-%         xlabel('\theta (?)')
-%         xlim([-90 90])
-%         legend('D_{max}','D_{min}','Copolar_{theta}', 'Crosspolar_{theta}')
-%         figure;
-%     end
-% end
 
-for jj=1:resPhi
-    plot(theta*360/(2*pi),Dmax(jj,:),'b')
-    hold on 
-    plot(thmin*360/(2*pi),Dmin(jj,:),'r')
-    hold on
-    ylabel('D(\theta) (dB)')
-    xlabel('\theta (?)')
-    xlim([-90 90])
-    plot(theta*360/(2*pi),dirSoldB(jj,:),'g',theta*360/(2*pi),dirXPdB(jj,:),'k')
-    title(['Galibos en el corte \phi= '  num2str(phicoor(jj)) '?'])
-    ylabel('D(\theta) (dB)')
-    xlabel('\theta (?)')
-    xlim([-90 90])
-    legend('D_{max}','D_{min}','Copolar_{theta}', 'Crosspolar_{theta}')
-    figure;
+jj = 2;     % phi = 0;
+maxDir = max(dirSoldB(jj, :));
+sll = calcSLL(dirSoldB(jj, :));
+cpxp = maxDir - max(dirXPdB(jj,round(resTheta/2)));
 end
-
-
-%  u = linspace(-1,1,resPhi);
-%  v = linspace(-1,1,resTheta);
-%  surf(u,v,Ecp2);
-
 

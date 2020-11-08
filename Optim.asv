@@ -50,7 +50,7 @@ load(file)
 % our initial theoretical design.
 freq = 8.15;    %  Frequency (GHz)
 datos(1,4) = freq;
-h = 3;         % Height of the waveguide (mm). Evaluate different values.
+h = [1:10];         % Height of the waveguide (mm). Evaluate different values.
 datos(1,1) = h;
 t = 1;          % Thickness of the upper plate (mm)
 datos(1,2) = t;
@@ -85,7 +85,7 @@ datos(5,1)= resTheta;
 %Resolution in phi
 % resPhi=181; % Number of phi angles
 % datos(5,2)= resPhi;
-resPhi=5; % Number of phi angles
+resPhi=3; % Number of phi angles
 datos(5,2)= resPhi;
 
 %Type of polarization (LHCP-->1 RHCP-->0)
@@ -98,7 +98,8 @@ datos(4,3)=-90;
 datos(4,4)=90;
 
 theta=linspace(-pi/2,pi/2,resTheta); %Rango completo de coordenadas theta
-phi = linspace (-pi,pi,resPhi); %Rango completo de coordenadas phi
+% phi = linspace (-pi,pi,resPhi); %Rango completo de coordenadas phi
+phi = [0 45 90];
 %% 2-Optimization target masks
 
 if isoflux
@@ -205,7 +206,7 @@ save('GaliboPincel.mat');
 %     end
 % end
 
-for jj=1:resPhi
+for jj=1:resphi
     plot(theta*360/(2*pi),Dmax(jj,:),'b')
     hold on 
     plot(thmin*360/(2*pi),Dmin(jj,:),'r')
@@ -223,8 +224,8 @@ for jj=1:resPhi
 end
 
 
-%  u = linspace(-1,1,resPhi);
-%  v = linspace(-1,1,resTheta);
-%  surf(u,v,Ecp2);
+ u = linspace(-1,1,resPhi);
+ v = linspace(-1,1,resTheta);
+ surf(u,v,Ecp2);
 
 
