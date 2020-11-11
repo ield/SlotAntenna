@@ -187,7 +187,7 @@ save ([path filename '.mat'], 'nslotsSol', 'slotsSol', 'dirSoldB', 'dirXPdB', 'd
 %% Conversion from radians to degrees
 if datos(2,2)~=0, slotsSol(:,5)=slotsSol(:,5)*180/pi;	 end
 
-for jj=1:resPhi
+for jj=1:resPhi,
 	phicoor(jj)=(datos(4,3)+(jj-1)*(datos(4,4)-datos(4,3))/(resPhi-1));
 end
 % Definition of thmin to plot Dmin
