@@ -50,7 +50,8 @@ sizeAntenna = 400;  %Size of the antenna in mm
 
 %Parameters that can be modified
 angMask=20; %Angle in which the main beam finishes (degrees)
-Nturns=floor((sizeAntenna/lambda0-1)/2); %Number of spiral turns
+% Nturns=floor((sizeAntenna/lambda0-1)/2); %Number of spiral turns
+Nturns = 9;
 Ncont=2*Nturns; %Number of control points
 isoflux=0; %Isoflux=1 to obtain an isoflux pattern. Isoflux=0 to obtain a pencil beam pattern
 
@@ -65,17 +66,17 @@ load(file)
 % our initial theoretical design.
 
 datos(1,4) = freq;
-h = 3;         % Height of the waveguide (mm). Evaluate different values.
+h = 12;         % Height of the waveguide (mm). Evaluate different values.
 datos(1,1) = h;
 t = 0.4;          % Thickness of the upper plate (mm)
 datos(1,2) = t;
-bw = 5;        % Main beam width (at -3 dB) (degrees)
+bw = 7;        % Main beam width (at -3 dB) (degrees)
 datos(3,1) = bw;
-Gmax = 33;      % Gain (dBi)
+Gmax = 31;      % Gain (dBi)
 datos(3,2) = Gmax;
-Gmin = 4;       %Difference between the maximum and minimum gain in the main beam (dB)
+Gmin = 2;       %Difference between the maximum and minimum gain in the main beam (dB)
 datos(3,3) = Gmin;
-LobSec = 23;    %Desired sidelobe level (dB)
+LobSec = 22;    %Desired sidelobe level (dB)
 datos(3,4) = LobSec;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %Other constants that are used
@@ -103,7 +104,7 @@ resPhi=5; % Number of phi angles
 datos(5,2)= resPhi;
 
 %Type of polarization (LHCP-->1 RHCP-->2)
-datos(5,3)= 2;
+datos(5,3)= 1;
 
 %M?nimo y m?ximo theta y phi
 datos(4,1)=-90;
@@ -223,19 +224,19 @@ for jj=1:3
     xlabel('\theta (?)')
     xlim([-90 90])
     % For lhcp
-%     plot(theta*360/(2*pi),dirSoldB(2+jj,:),'g',theta*360/(2*pi),dirXPdB(2+jj,:),'k')
-%     bw(jj) = findBw(theta*360/(2*pi),dirSoldB(2+jj,:))
-%     maxGain(jj) = max(dirSoldB(2+jj, :));
-%     sll(jj) = calcSLL(dirSoldB(2+jj, :));
-%     cpxp(jj) = maxGain(jj) - max(dirXPdB(2+jj,round(resTheta/2)));
-%     legend('D_{max}','D_{min}','Copolar_{theta}', 'Crosspolar_{theta}', 'Location', 'southwest')
+        plot(theta*360/(2*pi),dirSoldB(2+jj,:),'g',theta*360/(2*pi),dirXPdB(2+jj,:),'k')
+        bw(jj) = findBw(theta*360/(2*pi),dirSoldB(2+jj,:))
+        maxGain(jj) = max(dirSoldB(2+jj, :));
+        sll(jj) = calcSLL(dirSoldB(2+jj, :));
+        cpxp(jj) = maxGain(jj) - max(dirXPdB(2+jj,round(resTheta/2)));
+        legend('D_{max}','D_{min}','Copolar_{theta}', 'Crosspolar_{theta}', 'Location', 'southwest')
     % For RHCP: changes cp and xp
-    plot(theta*360/(2*pi),dirSoldB(jj+2,:),'k',theta*360/(2*pi),dirXPdB(2+jj,:),'g')
-    bw(jj) = findBw(theta*360/(2*pi),dirXPdB(2+jj,:))
-    maxGain(jj) = max(dirXPdB(2+jj, :));
-    sll(jj) = calcSLL(dirXPdB(2+jj, :));
-    cpxp(jj) = maxGain(jj) - max(dirSoldB(2+jj,round(resTheta/2)));
-    legend('D_{max}','D_{min}','Crosspolar_{theta}', 'Copolar_{theta}')
+%     plot(theta*360/(2*pi),dirSoldB(jj+2,:),'k',theta*360/(2*pi),dirXPdB(2+jj,:),'g')
+%     bw(jj) = findBw(theta*360/(2*pi),dirXPdB(2+jj,:))
+%     maxGain(jj) = max(dirXPdB(2+jj, :));
+%     sll(jj) = calcSLL(dirXPdB(2+jj, :));
+%     cpxp(jj) = maxGain(jj) - max(dirSoldB(2+jj,round(resTheta/2)));
+%     legend('D_{max}','D_{min}','Crosspolar_{theta}', 'Copolar_{theta}')
 
     title(['Cut \phi= '  num2str(phicoor(jj+2))])
     ylabel('D(\theta) (dB)')
