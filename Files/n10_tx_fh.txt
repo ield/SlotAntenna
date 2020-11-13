@@ -1,0 +1,7 @@
+The maximum directivity is 28.424502 dB
+The maximum gain is 27.966927 dB
+The sll in phi = 0º are 17.928028 dB
+The sll in phi = 90º are 32.932904 dB
+The cpxp is 47.657014 dB
+The beamwidth in phi = 0º is 6.000000 º
+The beamwidth in phi = 90º is 6.000000 º

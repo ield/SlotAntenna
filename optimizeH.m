@@ -1,4 +1,4 @@
-function [maxDir, sll, cpxp] = optimizeH(t)
+function [maxDir_res, sll_res, error] = optimizeH(h)
 
 
 %%%%% Optim.m %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -23,21 +23,41 @@ function [maxDir, sll, cpxp] = optimizeH(t)
 %   Author: Tamara Salmer?n
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Things to change for every simulation
+% freq: lin46
+% sizeAntenna: lin48
+% MaxGain: lin74
+% Polarization: lin106
+% Name of the saved antenna: lin 169
+% Data to be printed: depending on polarization 225 or 232
+% Name of the saved file: lin 243.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %function [slotsSol,nslotsSol]=Optim(resTheta,resPhi)
 
 %% 1-Initial setup
-close all;
-set(0,'defaultaxesfontsize',14);
-set(0,'defaulttextfontsize',14);
-set(0,'defaultlinelinewidth',2);
-set(0,'DefaultAxesXGrid','on','DefaultAxesYGrid','on','DefaultAxesZGrid','on')
+allFreq = [7.5 8.15];           % All central frequency is GHz
+freqText = ['rx'; 'tx'];
+indexFreq = 1;
+
+bw = [-0.25 0 0.25];            % Offset to the central frequency
+bwText = ['fl'; 'fc'; 'fh'];      % freq low, freq cent, freq high
+indexBw = 2;
+
+freq = allFreq(indexFreq) + bw(indexBw);    %  Frequency (GHz)
+lambda0=300/freq %Vacuum wavelength (mm)
+sizeAntenna = 400;  %Size of the antenna in mm
+
 
 %Parameters that can be modified
 angMask=20; %Angle in which the main beam finishes (degrees)
-Nturns=3; %Number of spiral turns
+% Nturns=floor((sizeAntenna/lambda0-1)/2); %Number of spiral turns
+Nturns = 8;
 Ncont=2*Nturns; %Number of control points
 isoflux=0; %Isoflux=1 to obtain an isoflux pattern. Isoflux=0 to obtain a pencil beam pattern
+
+filename = ['n' num2str(Nturns) '_' freqText(indexFreq, :) '_' bwText(indexBw, :)];
 
 %The antenna basic structure is loaded
 file='structurelowf.mat';
@@ -48,18 +68,19 @@ load(file)
 % It is important to insert them here and savet them in
 % datos of struclowf. They are the values below. The values are adjusted to
 % our initial theoretical design.
-freq =7.5;    %  Frequency (GHz)
+
 datos(1,4) = freq;
-h = 3;
-datos(1,1) = h;          % Thickness of the upper plate (mm)
+% h = 12;         % Height of the waveguide (mm). Evaluate different values.
+datos(1,1) = h;
+t = 0.4;          % Thickness of the upper plate (mm)
 datos(1,2) = t;
-bw = 5;        % Main beam width (at -3 dB) (degrees)
+bw = 7;        % Main beam width (at -3 dB) (degrees)
 datos(3,1) = bw;
-Gmax = 25;      % Gain (dBi)
+Gmax = 31;      % Gain (dBi)
 datos(3,2) = Gmax;
-Gmin = 4;       %Difference between the maximum and minimum gain in the main beam (dB)
+Gmin = 2;       %Difference between the maximum and minimum gain in the main beam (dB)
 datos(3,3) = Gmin;
-LobSec = 23;    %Desired sidelobe level (dB)
+LobSec = 22;    %Desired sidelobe level (dB)
 datos(3,4) = LobSec;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %Other constants that are used
@@ -67,7 +88,6 @@ freq=datos(1,4) %Frequency (GHz)
 epsr=datos(1,3) %Relative permittivity of the material that fills the RLSA
 t=datos(1,2); %Thickness of the upper plate (mm)
 h=datos(1,1); %Height of the waveguide (mm)
-lambda0=300/freq; %Vacuum wavelength (mm)
 
 %Waveguide wavelength (mm)
 lambdag=lambda0/sqrt(epsr); 
@@ -87,7 +107,7 @@ datos(5,1)= resTheta;
 resPhi=3; % Number of phi angles
 datos(5,2)= resPhi;
 
-%Type of polarization (LHCP-->1 RHCP-->0)
+%Type of polarization (LHCP-->1 RHCP-->2)
 datos(5,3)= 1;
 
 %M?nimo y m?ximo theta y phi
@@ -116,8 +136,8 @@ varPosIni=zeros(1,Ncont); %Initial values of the variation of the position of th
 xIni=[deltaRini longcIni varPosIni];
 
 %Optimization options
-options=optimset('Algorithm','active-set','Maxiter',1e3,'MaxFunEvals',1e3,'PlotFcns', {@optimplotx, @optimplotfval,@optimplotfunccount,@optimplotconstrviolation});
-
+options=optimset('Algorithm','active-set','Maxiter',2e3,'MaxFunEvals',2e3);
+% options=optimset('Algorithm','active-set','Maxiter',2e3,'MaxFunEvals',2e3, []'PlotFcns', {@optimplotx, @optimplotfval,@optimplotfunccount,@optimplotconstrviolation});
 %Bounds of the optimization parameters
 lb=[0.9*lambdag 0.39*lambdaeff*ones(1,Ncont) -0.05*lambdag*ones(1,Ncont)]; %Lower bounds
 ub=[1*lambdag 0.49*lambdaeff*ones(1,Ncont) 0.05*lambdag*ones(1,Ncont)]; %Upper bounds
@@ -128,7 +148,7 @@ if isoflux
     [xsol,fval,exitflag,output] = fmincon(@(x) ErrorFuncIsoflux(x,Nturns,DmaxdB,DmindB,XPmax, angMask,datos,cortos,sondas,puntos,file),xIni,[],[],[],[],lb,ub,[],options)
 else
     %Pencil beam with controlled SLL
-    [xsol,fval,exitflag,output] = fmincon(@(x) ErrorFuncPencil(x, Nturns, Dmax,Dmin, angPincel, datos,cortos,sondas,puntos,file),xIni,[],[],[],[],lb,ub,[],options)
+    [xsol,fval,exitflag,output] = fmincon(@(x) ErrorFuncPencil(x, Nturns, Dmax,Dmin, angPincel, datos,cortos,sondas,puntos,file),xIni,[],[],[],[],lb,ub,[],options);
 end
 
 %% 5-Results
@@ -154,9 +174,6 @@ if datos(2,2)~=0, slotsSol(:,5)=slotsSol(:,5)*pi/180;	 end
 dirSoldB=Ecp2+d0*ones(resPhi,resTheta); %CP component
 dirXPdB=Exp2+d0*ones(resPhi,resTheta); %XP component
 
-%The resutls are stored into a mat file
-save antena.mat nslotsSol slotsSol dirSoldB dirXPdB datos deltaRsol longcsol varPossol fval exitflag output resPhi resTheta
-
 %Conversion from radians to degrees
 if datos(2,2)~=0, slotsSol(:,5)=slotsSol(:,5)*180/pi;	 end
 
@@ -168,10 +185,19 @@ load('GaliboPincel.mat');
 thmin_plot = thmin;
 save('GaliboPincel.mat');
 
+%% Obtention of the final values
 
-jj = 2;     % phi = 0;
-maxDir = max(dirSoldB(jj, :));
-sll = calcSLL(dirSoldB(jj, :));
-cpxp = maxDir - max(dirXPdB(jj,round(resTheta/2)));
+maxDir = zeros(1, 2);
+sll = zeros(1, 2);
+for jj = 1:2
+    maxDir(jj) = max(dirSoldB(jj, :));
+    sll(jj) = calcSLL(dirSoldB(jj, :));
+    
+end
+maxDir_res = max(maxDir);
+sll_res = min(sll);
+
+error = sqrt((29-maxDir_res)^2*(maxDir_res<29)+(20-sll_res)^2*(sll_res<20));
+
 end
 

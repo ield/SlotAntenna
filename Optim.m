@@ -59,7 +59,7 @@ sizeAntenna = 400;  %Size of the antenna in mm
 %Parameters that can be modified
 angMask=20; %Angle in which the main beam finishes (degrees)
 % Nturns=floor((sizeAntenna/lambda0-1)/2); %Number of spiral turns
-Nturns = 9;
+Nturns = 8;
 Ncont=2*Nturns; %Number of control points
 isoflux=0; %Isoflux=1 to obtain an isoflux pattern. Isoflux=0 to obtain a pencil beam pattern
 
@@ -82,7 +82,7 @@ t = 0.4;          % Thickness of the upper plate (mm)
 datos(1,2) = t;
 bw = 7;        % Main beam width (at -3 dB) (degrees)
 datos(3,1) = bw;
-Gmax = 31;      % Gain (dBi)
+Gmax = 30.5;      % Gain (dBi)
 datos(3,2) = Gmax;
 Gmin = 2;       %Difference between the maximum and minimum gain in the main beam (dB)
 datos(3,3) = Gmin;
@@ -142,8 +142,8 @@ varPosIni=zeros(1,Ncont); %Initial values of the variation of the position of th
 xIni=[deltaRini longcIni varPosIni];
 
 %Optimization options
-options=optimset('Algorithm','active-set','Maxiter',2e3,'MaxFunEvals',2e3,'PlotFcns', {@optimplotx, @optimplotfval,@optimplotfunccount,@optimplotconstrviolation});
-
+options=optimset('Algorithm','active-set','Maxiter',2e3,'MaxFunEvals',2e3);
+% options=optimset('Algorithm','active-set','Maxiter',2e3,'MaxFunEvals',2e3, []'PlotFcns', {@optimplotx, @optimplotfval,@optimplotfunccount,@optimplotconstrviolation});
 %Bounds of the optimization parameters
 lb=[0.9*lambdag 0.39*lambdaeff*ones(1,Ncont) -0.05*lambdag*ones(1,Ncont)]; %Lower bounds
 ub=[1*lambdag 0.49*lambdaeff*ones(1,Ncont) 0.05*lambdag*ones(1,Ncont)]; %Upper bounds
@@ -154,7 +154,7 @@ if isoflux
     [xsol,fval,exitflag,output] = fmincon(@(x) ErrorFuncIsoflux(x,Nturns,DmaxdB,DmindB,XPmax, angMask,datos,cortos,sondas,puntos,file),xIni,[],[],[],[],lb,ub,[],options)
 else
     %Pencil beam with controlled SLL
-    [xsol,fval,exitflag,output] = fmincon(@(x) ErrorFuncPencil(x, Nturns, Dmax,Dmin, angPincel, datos,cortos,sondas,puntos,file),xIni,[],[],[],[],lb,ub,[],options)
+    [xsol,fval,exitflag,output] = fmincon(@(x) ErrorFuncPencil(x, Nturns, Dmax,Dmin, angPincel, datos,cortos,sondas,puntos,file),xIni,[],[],[],[],lb,ub,[],options);
 end
 
 %% 5-Results
@@ -181,7 +181,7 @@ dirSoldB=Ecp2+d0*ones(resPhi,resTheta); %CP component
 dirXPdB=Exp2+d0*ones(resPhi,resTheta); %XP component
 
 %The resutls are stored into a mat file
-path = 'Antennas/';
+path = 'AntennasSaved/';
 save ([path filename '.mat'], 'nslotsSol', 'slotsSol', 'dirSoldB', 'dirXPdB', 'datos', 'deltaRsol', 'longcsol', 'varPossol', 'fval', 'exitflag', 'output', 'resPhi', 'resTheta');
 
 %% Conversion from radians to degrees
@@ -194,28 +194,6 @@ end
 load('GaliboPincel.mat');
 thmin_plot = thmin;
 save('GaliboPincel.mat');
-
-% for jj=1:resphi
-%     if(jj == 1 | jj == ceil(resTheta/2) | jj == ceil(resTheta/4))
-% %     if(jj == 1 | jj == ceil(resTheta/2) | jj == ceil(resTheta/4))    
-%         
-%         plot(theta*360/(2*pi),Dmax(jj,:),'b')
-%         hold on 
-%         plot(thmin*360/(2*pi),Dmin(jj,:),'r')
-%         hold on
-%         ylabel('D(\theta) (dB)')
-%         xlabel('\theta (?)')
-%         xlim([-90 90])
-%         plot(theta*360/(2*pi),dirSoldB(jj,:),'g',theta*360/(2*pi),dirXPdB(jj,:),'k')
-%         title(['Galibos en el corte \phi= '  num2str(phicoor(jj)) '?'])
-%         ylabel('D(\theta) (dB)')
-%         xlabel('\theta (?)')
-%         xlim([-90 90])
-%         legend('D_{max}','D_{min}','Copolar_{theta}', 'Crosspolar_{theta}')
-%         figure;
-%     end
-% end
-% Do this for resPhi = 3 so that there are no exceeding stored values
 %% Plot and print
 bw = zeros(1, resPhi);
 maxGain = zeros(1, resPhi);
@@ -267,9 +245,4 @@ fprintf('The cpxp is %f dB\n', max(cpxp));
 fprintf('The beamwidth in phi = 0º is %f º\n', bw(3));
 fprintf('The beamwidth in phi = 90º is %f º\n', bw(1));
 
-
-%  u = linspace(-1,1,resPhi);
-%  v = linspace(-1,1,resTheta);
-%  surf(u,v,Ecp2);
-% close all;
 

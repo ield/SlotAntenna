@@ -1,18 +1,40 @@
-t = [1:20]*.05;
+clear all;
+close all;
+path = 'Plots/';
+h = [10:0.5:20]; %From lambda/4 to lambda/2
 
 maxDir = zeros(1, length(h));
 sll = zeros(1, length(h));
-cpxp = zeros(1, length(h));
+error = zeros(1, length(h));
 
 for ii = 1:length(h)
-   [maxDir(ii), sll(ii), cpxp(ii)] = optimizeH(h(ii)); 
+   [maxDir(ii), sll(ii), error(ii)] = optimizeH(h(ii)); 
 end
 
-figure;
+figure('Color',[1 1 1]);
+set(gcf, 'DefaultAxesFontSize',10)
 plot(h, maxDir); hold on;
 plot(h, sll); hold on;
-plot(h, cpxp); hold on;
+plot(h, error); hold on;
 
-xlabel('substrate height (mm)');
+xlabel('Substrate thickness (mm)');
 ylabel('dB');
-legend('Max Dir', 'SLL', 'CPXP');
+legend('Max Dir', 'SLL', 'error', 'Location', 'southwest');
+saveas(gca, [path, 'optim_h'],'epsc');
+saveas(gca, [path, 'optim_h'],'png');
+
+%% Once it is known the substrate value that gives the best results it is studied that results for 8, 9 and 10 turns
+
+indexMinError = find(error == min(error));
+% h_subs = h(indexMinError);
+h_subs = 20;
+
+fprintf('The substrate chosen is %f\n', h_subs);
+
+for Nturns = 8:10
+    for txrx = 1:2
+       for fsel = 1:3
+           optimizeAll(h_subs, txrx, fsel, Nturns);
+       end
+    end
+end
