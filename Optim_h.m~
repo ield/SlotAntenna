@@ -53,5 +53,3 @@ Nturns = 10;
            optimizeAll(h_subs, txrx, fsel, Nturns);
        end
     end
-    
-    % Faltan 10 rx fmaxx y 10 tx all
