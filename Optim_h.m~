@@ -41,15 +41,13 @@ fprintf('The substrate chosen is %f\n', h_subs);
 %     end
 % end
 
-Nturns = 9;
+
+Nturns = 10;
+txrx = 1; fsel = 3;
+optimizeAll(h_subs, txrx, fsel, Nturns);
+
 txrx = 2;
 for fsel = 1:3
    optimizeAll(h_subs, txrx, fsel, Nturns);
 end
-
-Nturns = 10;
-    for txrx = 1:2
-       for fsel = 1:3
-           optimizeAll(h_subs, txrx, fsel, Nturns);
-       end
-    end
+    % Faltan 10 rx fmaxx y 10 tx all
