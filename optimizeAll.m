@@ -169,7 +169,7 @@ if datos(2,2)~=0, slotsSol(:,5)=slotsSol(:,5)*pi/180;	 end
 dirSoldB=Ecp2+d0*ones(resPhi,resTheta); %CP component
 dirXPdB=Exp2+d0*ones(resPhi,resTheta); %XP component
 
-The resutls are stored into a mat file
+% The resutls are stored into a mat file
 path = 'AntennasSaved/';
 save ([path filename '.mat'], 'nslotsSol', 'slotsSol', 'dirSoldB', 'dirXPdB', 'datos', 'cortos', 'sondas', 'deltaRsol', 'longcsol', 'varPossol', 'fval', 'exitflag', 'output', 'resPhi', 'resTheta');
 
@@ -240,7 +240,6 @@ close all;
 
 %% Create the .asc file
 path = 'AntennasSaved/';
-filename = 'n8_rx_fc';
 load([path filename '.mat']);
 
 % puntos = zeros(length(slotsSol),1);

@@ -34,15 +34,14 @@ saveas(gca, [path, 'optim_h'],'png');
 indexMinError = find(error == min(error), 1);
 % h_subs = h(indexMinError);
 h_subs = h(end-1);
-
+ 
 fprintf('The substrate chosen is %f\n', h_subs);
 
 parfor Nturns = 8:10
-    for txrx = 1:2
+    txrx = 1;
        for fsel = 1:2
            optimizeAll(h_subs, txrx, fsel, Nturns);
        end
-    end
 
 end
 
