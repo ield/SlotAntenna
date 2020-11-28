@@ -49,7 +49,7 @@ bwText = ['fl'; 'fc'; 'fh'];      % freq low, freq cent, freq high
 
 
 freq = allFreq(indexFreq) + bw(indexBw);    %  Frequency (GHz)
-lambda0=300/freq %Vacuum wavelength (mm)
+lambda0=300/freq; %Vacuum wavelength (mm)
 
 %Parameters that can be modified
 % Nturns=floor((sizeAntenna/lambda0-1)/2); %Number of spiral turns
@@ -142,13 +142,9 @@ lb=[0.9*lambdag 0.39*lambdaeff*ones(1,Ncont) -0.05*lambdag*ones(1,Ncont)]; %Lowe
 ub=[1*lambdag 0.49*lambdaeff*ones(1,Ncont) 0.05*lambdag*ones(1,Ncont)]; %Upper bounds
 
 %% 4-Optimization process
-if isoflux
-    %Isoflux patterns
-    [xsol,fval,exitflag,output] = fmincon(@(x) ErrorFuncIsoflux(x,Nturns,DmaxdB,DmindB,XPmax, angMask,datos,cortos,sondas,puntos,file),xIni,[],[],[],[],lb,ub,[],options)
-else
-    %Pencil beam with controlled SLL
-    [xsol,fval,exitflag,output] = fmincon(@(x) ErrorFuncPencil(x, Nturns, Dmax,Dmin, angPincel, datos,cortos,sondas,puntos,file),xIni,[],[],[],[],lb,ub,[],options);
-end
+%Pencil beam with controlled SLL
+[xsol,fval,exitflag,output] = fmincon(@(x) ErrorFuncPencil(x, Nturns, Dmax,Dmin, angPincel, datos,cortos,sondas,puntos,file),xIni,[],[],[],[],lb,ub,[],options);
+
 
 %% 5-Results
 
@@ -173,9 +169,9 @@ if datos(2,2)~=0, slotsSol(:,5)=slotsSol(:,5)*pi/180;	 end
 dirSoldB=Ecp2+d0*ones(resPhi,resTheta); %CP component
 dirXPdB=Exp2+d0*ones(resPhi,resTheta); %XP component
 
-%The resutls are stored into a mat file
-% path = 'AntennasSaved/';
-% save ([path filename '.mat'], 'nslotsSol', 'slotsSol', 'dirSoldB', 'dirXPdB', 'datos', 'deltaRsol', 'longcsol', 'varPossol', 'fval', 'exitflag', 'output', 'resPhi', 'resTheta');
+The resutls are stored into a mat file
+path = 'AntennasSaved/';
+save ([path filename '.mat'], 'nslotsSol', 'slotsSol', 'dirSoldB', 'dirXPdB', 'datos', 'cortos', 'sondas', 'deltaRsol', 'longcsol', 'varPossol', 'fval', 'exitflag', 'output', 'resPhi', 'resTheta');
 
 %% Conversion from radians to degrees
 if datos(2,2)~=0, slotsSol(:,5)=slotsSol(:,5)*180/pi;	 end
@@ -240,6 +236,7 @@ fprintf(file, 'The cpxp is %f dB\n', max(cpxp));
 fprintf(file, 'The beamwidth in phi = 0º is %f º\n', bw(3));
 fprintf(file, 'The beamwidth in phi = 90º is %f º\n', bw(1));
 fclose(file);
+close all;
 
 end
 

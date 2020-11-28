@@ -52,14 +52,14 @@ bwText = ['fl'; 'fc'; 'fh'];      % freq low, freq cent, freq high
 indexBw = 2;
 
 freq = allFreq(indexFreq) + bw(indexBw);    %  Frequency (GHz)
-lambda0=300/freq %Vacuum wavelength (mm)
+lambda0=300/freq; %Vacuum wavelength (mm)
 sizeAntenna = 400;  %Size of the antenna in mm
 
 
 %Parameters that can be modified
 angMask=20; %Angle in which the main beam finishes (degrees)
 % Nturns=floor((sizeAntenna/lambda0-1)/2); %Number of spiral turns
-Nturns = 8;
+Nturns = 3;
 Ncont=2*Nturns; %Number of control points
 isoflux=0; %Isoflux=1 to obtain an isoflux pattern. Isoflux=0 to obtain a pencil beam pattern
 
@@ -90,8 +90,8 @@ LobSec = 22;    %Desired sidelobe level (dB)
 datos(3,4) = LobSec;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %Other constants that are used
-freq=datos(1,4) %Frequency (GHz)
-epsr=datos(1,3) %Relative permittivity of the material that fills the RLSA
+freq=datos(1,4); %Frequency (GHz)
+epsr=datos(1,3); %Relative permittivity of the material that fills the RLSA
 t=datos(1,2); %Thickness of the upper plate (mm)
 h=datos(1,1); %Height of the waveguide (mm)
 
@@ -126,11 +126,7 @@ theta=linspace(-pi/2,pi/2,resTheta); %Rango completo de coordenadas theta
 phi = linspace (-pi,pi,resPhi); %Rango completo de coordenadas phi
 %% 2-Optimization target masks
 
-if isoflux
-%     [DmaxdB,DmindB,XPmax]=MaskIsoflux20(resTheta,resPhi); %Isoflux mask
-else
-    [Dmax,Dmin,angPincel]=MaskPencil(resTheta,resPhi, datos(3,:)); %Pencil beam with controlled SLL mask
-end
+[Dmax,Dmin,angPincel]=MaskPencil(resTheta,resPhi, datos(3,:)); %Pencil beam with controlled SLL mask
 
 %% 3-Optimization initial values and bounds
 
@@ -149,13 +145,8 @@ lb=[0.9*lambdag 0.39*lambdaeff*ones(1,Ncont) -0.05*lambdag*ones(1,Ncont)]; %Lowe
 ub=[1*lambdag 0.49*lambdaeff*ones(1,Ncont) 0.05*lambdag*ones(1,Ncont)]; %Upper bounds
 
 %% 4-Optimization process
-if isoflux
-    %Isoflux patterns
-    [xsol,fval,exitflag,output] = fmincon(@(x) ErrorFuncIsoflux(x,Nturns,DmaxdB,DmindB,XPmax, angMask,datos,cortos,sondas,puntos,file),xIni,[],[],[],[],lb,ub,[],options)
-else
-    %Pencil beam with controlled SLL
-    [xsol,fval,exitflag,output] = fmincon(@(x) ErrorFuncPencil(x, Nturns, Dmax,Dmin, angPincel, datos,cortos,sondas,puntos,file),xIni,[],[],[],[],lb,ub,[],options);
-end
+%Pencil beam with controlled SLL
+[xsol,fval,exitflag,output] = fmincon(@(x) ErrorFuncPencil(x, Nturns, Dmax,Dmin, angPincel, datos,cortos,sondas,puntos,file),xIni,[],[],[],[],lb,ub,[],options);
 
 %% 5-Results
 
@@ -182,7 +173,7 @@ dirXPdB=Exp2+d0*ones(resPhi,resTheta); %XP component
 
 %The resutls are stored into a mat file
 path = 'AntennasSaved/';
-save ([path filename '.mat'], 'nslotsSol', 'slotsSol', 'dirSoldB', 'dirXPdB', 'datos', 'deltaRsol', 'longcsol', 'varPossol', 'fval', 'exitflag', 'output', 'resPhi', 'resTheta');
+save ([path filename '.mat'], 'datos', 'cortos', 'nslotsSol', 'sondas', 'slotsSol', 'dirSoldB', 'dirXPdB', 'datos', 'deltaRsol', 'longcsol', 'varPossol', 'fval', 'exitflag', 'output', 'resPhi', 'resTheta');
 
 %% Conversion from radians to degrees
 if datos(2,2)~=0, slotsSol(:,5)=slotsSol(:,5)*180/pi;	 end
@@ -245,4 +236,17 @@ fprintf('The cpxp is %f dB\n', max(cpxp));
 fprintf('The beamwidth in phi = 0º is %f º\n', bw(3));
 fprintf('The beamwidth in phi = 90º is %f º\n', bw(1));
 
+%% Create the .asc file
+load([path filename '.mat']);
 
+puntos = zeros(length(slotsSol),1);
+puntos(:,1) = slotsSol(:,1);
+puntos(:,2) = slotsSol(:,2);
+
+epsr=datos(1,3); %Relative permittivity of the material that fills the RLSA
+t=datos(1,2); %Thickness of the upper plate (mm)
+h=datos(1,1); %Height of the waveguide (mm)
+data_asc = [h t epsr];
+
+escribe(slotsSol,sondas,puntos,data_asc);
+writeDXF(datos, cortos, slotsSol);

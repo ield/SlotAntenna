@@ -43,7 +43,7 @@ indexFreq = 1;
 
 bw = [-0.25 0 0.25];            % Offset to the central frequency
 bwText = ['fl'; 'fc'; 'fh'];      % freq low, freq cent, freq high
-indexBw = 2;
+indexBw = 1;                    % It is best to see them work in the lower frequency because they are less effective
 
 freq = allFreq(indexFreq) + bw(indexBw);    %  Frequency (GHz)
 lambda0=300/freq %Vacuum wavelength (mm)
@@ -51,13 +51,10 @@ sizeAntenna = 400;  %Size of the antenna in mm
 
 
 %Parameters that can be modified
-angMask=20; %Angle in which the main beam finishes (degrees)
 % Nturns=floor((sizeAntenna/lambda0-1)/2); %Number of spiral turns
 Nturns = 8;
 Ncont=2*Nturns; %Number of control points
 isoflux=0; %Isoflux=1 to obtain an isoflux pattern. Isoflux=0 to obtain a pencil beam pattern
-
-filename = ['n' num2str(Nturns) '_' freqText(indexFreq, :) '_' bwText(indexBw, :)];
 
 %The antenna basic structure is loaded
 file='structurelowf.mat';
@@ -118,14 +115,10 @@ datos(4,4)=90;
 
 theta=linspace(-pi/2,pi/2,resTheta); %Rango completo de coordenadas theta
 phi = linspace (-pi,pi,resPhi); %Rango completo de coordenadas phi
+save(file);
 %% 2-Optimization target masks
 
-if isoflux
-%     [DmaxdB,DmindB,XPmax]=MaskIsoflux20(resTheta,resPhi); %Isoflux mask
-else
-    [Dmax,Dmin,angPincel]=MaskPencil(resTheta,resPhi, datos(3,:)); %Pencil beam with controlled SLL mask
-end
-
+[Dmax,Dmin,angPincel]=MaskPencil(resTheta,resPhi, datos(3,:)); %Pencil beam with controlled SLL mask
 %% 3-Optimization initial values and bounds
 
 deltaRini=lambdag; %Initial value of the distance between successive turns
@@ -136,20 +129,16 @@ varPosIni=zeros(1,Ncont); %Initial values of the variation of the position of th
 xIni=[deltaRini longcIni varPosIni];
 
 %Optimization options
-options=optimset('Algorithm','active-set','Maxiter',2e3,'MaxFunEvals',2e3);
-% options=optimset('Algorithm','active-set','Maxiter',2e3,'MaxFunEvals',2e3, []'PlotFcns', {@optimplotx, @optimplotfval,@optimplotfunccount,@optimplotconstrviolation});
+% options=optimset('Algorithm','active-set','Maxiter',2e3,'MaxFunEvals',2e3);
+options=optimset('Algorithm','active-set','Maxiter',2e3,'MaxFunEvals',2e3, 'PlotFcns', {@optimplotx, @optimplotfval,@optimplotfunccount,@optimplotconstrviolation});
 %Bounds of the optimization parameters
 lb=[0.9*lambdag 0.39*lambdaeff*ones(1,Ncont) -0.05*lambdag*ones(1,Ncont)]; %Lower bounds
 ub=[1*lambdag 0.49*lambdaeff*ones(1,Ncont) 0.05*lambdag*ones(1,Ncont)]; %Upper bounds
 
 %% 4-Optimization process
-if isoflux
-    %Isoflux patterns
-    [xsol,fval,exitflag,output] = fmincon(@(x) ErrorFuncIsoflux(x,Nturns,DmaxdB,DmindB,XPmax, angMask,datos,cortos,sondas,puntos,file),xIni,[],[],[],[],lb,ub,[],options)
-else
-    %Pencil beam with controlled SLL
-    [xsol,fval,exitflag,output] = fmincon(@(x) ErrorFuncPencil(x, Nturns, Dmax,Dmin, angPincel, datos,cortos,sondas,puntos,file),xIni,[],[],[],[],lb,ub,[],options);
-end
+%Pencil beam with controlled SLL
+[xsol,fval,exitflag,output] = fmincon(@(x) ErrorFuncPencil(x, Nturns, Dmax,Dmin, angPincel, datos,cortos,sondas,puntos,file),xIni,[],[],[],[],lb,ub,[],options);
+
 
 %% 5-Results
 
