@@ -49,7 +49,7 @@ indexFreq = 1;
 
 bw = [-0.25 0 0.25];            % Offset to the central frequency
 bwText = ['fl'; 'fc'; 'fh'];      % freq low, freq cent, freq high
-indexBw = 2;
+indexBw = 1;
 
 freq = allFreq(indexFreq) + bw(indexBw);    %  Frequency (GHz)
 lambda0=300/freq; %Vacuum wavelength (mm)
@@ -68,7 +68,7 @@ filename = ['n' num2str(Nturns) '_' freqText(indexFreq, :) '_' bwText(indexBw, :
 %The antenna basic structure is loaded
 file='structurelowf.mat';
 load(file)
-
+%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %Values to modify: 
 % It is important to insert them here and savet them in
@@ -76,7 +76,7 @@ load(file)
 % our initial theoretical design.
 
 datos(1,4) = freq;
-h = 12;         % Height of the waveguide (mm). Evaluate different values.
+h = 14;         % Height of the waveguide (mm). Evaluate different values.
 datos(1,1) = h;
 t = 0.4;          % Thickness of the upper plate (mm)
 datos(1,2) = t;
@@ -138,8 +138,8 @@ varPosIni=zeros(1,Ncont); %Initial values of the variation of the position of th
 xIni=[deltaRini longcIni varPosIni];
 
 %Optimization options
-options=optimset('Algorithm','active-set','Maxiter',2e3,'MaxFunEvals',2e3);
-% options=optimset('Algorithm','active-set','Maxiter',2e3,'MaxFunEvals',2e3, []'PlotFcns', {@optimplotx, @optimplotfval,@optimplotfunccount,@optimplotconstrviolation});
+% options=optimset('Algorithm','active-set','Maxiter',2e3,'MaxFunEvals',2e3);
+options=optimset('Algorithm','active-set','Maxiter',2e3,'MaxFunEvals',2e3,'PlotFcns', {@optimplotx, @optimplotfval,@optimplotfunccount,@optimplotconstrviolation});
 %Bounds of the optimization parameters
 lb=[0.9*lambdag 0.39*lambdaeff*ones(1,Ncont) -0.05*lambdag*ones(1,Ncont)]; %Lower bounds
 ub=[1*lambdag 0.49*lambdaeff*ones(1,Ncont) 0.05*lambdag*ones(1,Ncont)]; %Upper bounds

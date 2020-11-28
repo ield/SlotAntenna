@@ -1,4 +1,3 @@
-function [] = optimizeAll(h, indexFreq, indexBw, Nturns)
 
 
 %%%%% Optim.m %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -37,22 +36,30 @@ function [] = optimizeAll(h, indexFreq, indexBw, Nturns)
 %function [slotsSol,nslotsSol]=Optim(resTheta,resPhi)
 
 %% 1-Initial setup
+clear all
+close all
+set(0,'defaultaxesfontsize',14);
+set(0,'defaulttextfontsize',14);
 set(0,'defaultlinelinewidth',2);
 set(0,'DefaultAxesXGrid','on','DefaultAxesYGrid','on','DefaultAxesZGrid','on')
 
 allFreq = [7.5 8.15];           % All central frequency is GHz
 freqText = ['rx'; 'tx'];
-mG = [30.5 31];
+indexFreq = 1;
 
 bw = [-0.25 0 0.25];            % Offset to the central frequency
 bwText = ['fl'; 'fc'; 'fh'];      % freq low, freq cent, freq high
-
+indexBw = 1;
 
 freq = allFreq(indexFreq) + bw(indexBw);    %  Frequency (GHz)
 lambda0=300/freq; %Vacuum wavelength (mm)
+sizeAntenna = 400;  %Size of the antenna in mm
+
 
 %Parameters that can be modified
+angMask=20; %Angle in which the main beam finishes (degrees)
 % Nturns=floor((sizeAntenna/lambda0-1)/2); %Number of spiral turns
+Nturns = 3;
 Ncont=2*Nturns; %Number of control points
 isoflux=0; %Isoflux=1 to obtain an isoflux pattern. Isoflux=0 to obtain a pencil beam pattern
 
@@ -69,13 +76,13 @@ load(file)
 % our initial theoretical design.
 
 datos(1,4) = freq;
-
+h = 14;         % Height of the waveguide (mm). Evaluate different values.
 datos(1,1) = h;
 t = 0.4;          % Thickness of the upper plate (mm)
 datos(1,2) = t;
 bw = 7;        % Main beam width (at -3 dB) (degrees)
 datos(3,1) = bw;
-Gmax = mG(indexFreq);      % Gain (dBi)
+Gmax = 30.5;      % Gain (dBi)
 datos(3,2) = Gmax;
 Gmin = 2;       %Difference between the maximum and minimum gain in the main beam (dB)
 datos(3,3) = Gmin;
@@ -83,8 +90,8 @@ LobSec = 22;    %Desired sidelobe level (dB)
 datos(3,4) = LobSec;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %Other constants that are used
-freq=datos(1,4) %Frequency (GHz)
-epsr=datos(1,3) %Relative permittivity of the material that fills the RLSA
+freq=datos(1,4); %Frequency (GHz)
+epsr=datos(1,3); %Relative permittivity of the material that fills the RLSA
 t=datos(1,2); %Thickness of the upper plate (mm)
 h=datos(1,1); %Height of the waveguide (mm)
 
@@ -119,11 +126,7 @@ theta=linspace(-pi/2,pi/2,resTheta); %Rango completo de coordenadas theta
 phi = linspace (-pi,pi,resPhi); %Rango completo de coordenadas phi
 %% 2-Optimization target masks
 
-if isoflux
-%     [DmaxdB,DmindB,XPmax]=MaskIsoflux20(resTheta,resPhi); %Isoflux mask
-else
-    [Dmax,Dmin,angPincel]=MaskPencil(resTheta,resPhi, datos(3,:)); %Pencil beam with controlled SLL mask
-end
+[Dmax,Dmin,angPincel]=MaskPencil(resTheta,resPhi, datos(3,:)); %Pencil beam with controlled SLL mask
 
 %% 3-Optimization initial values and bounds
 
@@ -144,7 +147,6 @@ ub=[1*lambdag 0.49*lambdaeff*ones(1,Ncont) 0.05*lambdag*ones(1,Ncont)]; %Upper b
 %% 4-Optimization process
 %Pencil beam with controlled SLL
 [xsol,fval,exitflag,output] = fmincon(@(x) ErrorFuncPencil(x, Nturns, Dmax,Dmin, angPincel, datos,cortos,sondas,puntos,file),xIni,[],[],[],[],lb,ub,[],options);
-
 
 %% 5-Results
 
@@ -169,9 +171,9 @@ if datos(2,2)~=0, slotsSol(:,5)=slotsSol(:,5)*pi/180;	 end
 dirSoldB=Ecp2+d0*ones(resPhi,resTheta); %CP component
 dirXPdB=Exp2+d0*ones(resPhi,resTheta); %XP component
 
-The resutls are stored into a mat file
+%The resutls are stored into a mat file
 path = 'AntennasSaved/';
-save ([path filename '.mat'], 'nslotsSol', 'slotsSol', 'dirSoldB', 'dirXPdB', 'datos', 'cortos', 'sondas', 'deltaRsol', 'longcsol', 'varPossol', 'fval', 'exitflag', 'output', 'resPhi', 'resTheta');
+save ([path filename '.mat'], 'datos', 'cortos', 'nslotsSol', 'sondas', 'slotsSol', 'dirSoldB', 'dirXPdB', 'datos', 'deltaRsol', 'longcsol', 'varPossol', 'fval', 'exitflag', 'output', 'resPhi', 'resTheta');
 
 %% Conversion from radians to degrees
 if datos(2,2)~=0, slotsSol(:,5)=slotsSol(:,5)*180/pi;	 end
@@ -225,36 +227,26 @@ path = 'Plots/';
 saveas(gca, [path, filename],'epsc');
 saveas(gca, [path, filename],'svg');
 
-path = 'Files/';
-file = fopen([path, filename, '.txt'], 'w'); 
 eff = 0.9;
-fprintf(file, 'The maximum directivity is %f dB\n', max(maxGain));
-fprintf(file, 'The maximum gain is %f dB\n', max(maxGain)+10*log10(eff));
-fprintf(file, 'The sll in phi = 0º are %f dB\n', sll(3));
-fprintf(file, 'The sll in phi = 90º are %f dB\n', sll(1));
-fprintf(file, 'The cpxp is %f dB\n', max(cpxp));
-fprintf(file, 'The beamwidth in phi = 0º is %f º\n', bw(3));
-fprintf(file, 'The beamwidth in phi = 90º is %f º\n', bw(1));
-fclose(file);
-close all;
+fprintf('The maximum directivity is %f dB\n', max(maxGain));
+fprintf('The maximum gain is %f dB\n', max(maxGain)+10*log10(eff));
+fprintf('The sll in phi = 0º are %f dB\n', sll(3));
+fprintf('The sll in phi = 90º are %f dB\n', sll(1));
+fprintf('The cpxp is %f dB\n', max(cpxp));
+fprintf('The beamwidth in phi = 0º is %f º\n', bw(3));
+fprintf('The beamwidth in phi = 90º is %f º\n', bw(1));
 
 %% Create the .asc file
-path = 'AntennasSaved/';
-filename = 'n8_rx_fc';
 load([path filename '.mat']);
 
-% puntos = zeros(length(slotsSol),1);
-% puntos(:,1) = slotsSol(:,1);
-% puntos(:,2) = slotsSol(:,2);
+puntos = zeros(length(slotsSol),1);
+puntos(:,1) = slotsSol(:,1);
+puntos(:,2) = slotsSol(:,2);
 
-% epsr=datos(1,3); %Relative permittivity of the material that fills the RLSA
-% t=datos(1,2); %Thickness of the upper plate (mm)
-% h=datos(1,1); %Height of the waveguide (mm)
-% data_asc = [h t epsr];
+epsr=datos(1,3); %Relative permittivity of the material that fills the RLSA
+t=datos(1,2); %Thickness of the upper plate (mm)
+h=datos(1,1); %Height of the waveguide (mm)
+data_asc = [h t epsr];
 
-% escribe(slotsSol,sondas,puntos,data_asc);
-path = 'DXF_Files/';
-writeDXF(path, filename, datos, cortos, slotsSol);
-
-end
-
+escribe(slotsSol,sondas,puntos,data_asc);
+writeDXF(datos, cortos, slotsSol);

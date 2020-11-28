@@ -115,7 +115,6 @@ datos(4,4)=90;
 
 theta=linspace(-pi/2,pi/2,resTheta); %Rango completo de coordenadas theta
 phi = linspace (-pi,pi,resPhi); %Rango completo de coordenadas phi
-save(file);
 %% 2-Optimization target masks
 
 [Dmax,Dmin,angPincel]=MaskPencil(resTheta,resPhi, datos(3,:)); %Pencil beam with controlled SLL mask

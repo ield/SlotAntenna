@@ -240,7 +240,6 @@ close all;
 
 %% Create the .asc file
 path = 'AntennasSaved/';
-filename = 'n8_rx_fc';
 load([path filename '.mat']);
 
 % puntos = zeros(length(slotsSol),1);
@@ -253,8 +252,8 @@ load([path filename '.mat']);
 % data_asc = [h t epsr];
 
 % escribe(slotsSol,sondas,puntos,data_asc);
-path = 'DXF_Files/';
-writeDXF(path, filename, datos, cortos, slotsSol);
+path = '
+writeDXF(path, name, datos, cortos, slotsSol);
 
 end
 

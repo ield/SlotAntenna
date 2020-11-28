@@ -1,5 +1,5 @@
-function [] = writeDXF(datos, cortos, ranuras)
-		Nome_fich=strcat('antenna','.dxf');
+function [] = writeDXF(path, name, datos, cortos, ranuras)
+		Nome_fich=strcat(path, name, '.dxf');
 		fid=fopen(Nome_fich,'w');
 		
 		fprintf(fid,'  0\n');
