@@ -58,7 +58,7 @@ Hy=[];
 son=1-isempty(sondas);
 rad=1-isempty(ranuras);
 punt=1-isempty(puntos);
-npun=datos(2,4);
+npun=datos(2,4)
 if datos(2,3)==0, 
     fin=0;
 else

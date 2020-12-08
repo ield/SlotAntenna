@@ -31,7 +31,7 @@ function[ro,phi,nslots,slots]=SpiralN(N,deltaR,file)
 
 %The antenna basic structure is loaded
 load(file)
-
+w = 1;
 %Constants that are used
 frec=datos(1,4); %Central frequency (GHz)
 epsr=datos(1,3); %Relative permittivity of the material that fills the RLSA
